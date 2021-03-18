@@ -229,8 +229,25 @@ pnext_page:
 	print_char 10
 
 no_nl:
+	mov ax, offset directory
+	call strlen
+	
+	push bx
+
+	mov ax, offset fn
+	call strlen
+
+	pop dx
+	add bx, dx
+	dec bx
+
+	cmp bx, 80
+	jg filename_only
+
 	print directory
 	print_char 8
+
+filename_only:
 	print fn
 	print_char 13
 	print_char 10
@@ -319,6 +336,18 @@ add_slash:
 
 	dec bx
 	mov [si + bx], 92
+
+	ret
+
+strlen:
+	mov si, ax
+	xor bx, bx
+	next_byte:
+		mov al, byte [si + bx]
+		inc bx
+
+		cmp al, 36
+		jne next_byte
 
 	ret
 
