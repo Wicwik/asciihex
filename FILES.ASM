@@ -2,9 +2,8 @@ TITLE File management module
 
 include atoh.inc
 include utils.inc
+include time.inc
 
-public buffer
-public hexstr
 
 	.MODEL small
 
@@ -13,7 +12,7 @@ public hexstr
 
 	.DATA
 		estr db 'Nastala chyba$'
-		fn db 'FILE.TXT',0
+		fn db 'FILE.TXT',"$"
 		file_handle dw ?
 
 		buffer db 2 dup('$')
@@ -23,14 +22,18 @@ public hexstr
 		chars_in_row dw 0
 		rowscounter dw 0
 
-		pagestr db "Press any key to continue...", "$"
-	.CODE
+		pagestr db 9,9,9,9," "," "," ","Press any key to continue...", "$"
 
+		directory db 1024 dup('$')
+	.CODE
+public buffer
+public hexstr
 public fileopen
 public fileread
 public fileread_paging
 public fileclose
 public endprog
+public print_number_noc
 
 ;ax input
 print_number PROC
@@ -159,8 +162,8 @@ print_charcounter:
 	cmp dx, 0
 	je skip_nl
 
-	print_char 10
 	print_char 13
+	print_char 10
 
 skip_nl:
 	mov ax, charcounter
@@ -188,6 +191,9 @@ fileread_paging PROC
 mov chars_in_row, 0
 mov rowscounter, 0
 
+call get_cwd
+call add_slash
+
 pread_loop:
 	mov bx, file_handle
 	mov cx, 1
@@ -211,7 +217,7 @@ pread_loop:
 	jmp pprint_hexa
 
 pcheck_endpage:
-	cmp rowscounter, 24
+	cmp rowscounter, 23
 	je pnext_page
 	jmp pprint_charcounter
 
@@ -219,10 +225,24 @@ pnext_page:
 	modulo chars_in_row, 2
 	cmp dx, 0
 	je no_nl
-	print_char 10
 	print_char 13
+	print_char 10
 
 no_nl:
+	print directory
+	print_char 8
+	print fn
+	print_char 13
+	print_char 10
+	inc rowscounter
+
+	call prepare_datetime
+	print date
+	print_char ' '
+	print_char '-'
+	print_char '-'
+	print_char ' '
+	print time
 	print pagestr
 	inc rowscounter
 
@@ -240,8 +260,8 @@ pprint_charcounter:
 	cmp dx, 0
 	je pskip_nl
 
-	print_char 10
 	print_char 13
+	print_char 10
 
 pskip_nl:
 	mov ax, charcounter
@@ -277,6 +297,30 @@ fileclose PROC
 
 	ret
 fileclose ENDP
+
+
+get_cwd:
+	mov ah, 47h
+	mov dl, 0
+	mov si, offset directory
+	int 21h
+
+	ret
+
+add_slash:
+	mov si, offset directory
+	xor bx, bx
+	findend:
+		mov al, byte [si + bx]
+
+		inc bx
+		cmp al, 36
+		jne findend
+
+	dec bx
+	mov [si + bx], 92
+
+	ret
 
 error:
 	print estr

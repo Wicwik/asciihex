@@ -11,7 +11,7 @@ include utils.inc
 	P486N
 
 	.DATA
-	helpstr db "ASCII TO HEX CONVERTOR PROGRAM by Robert Belanec",10,13,"Usage: PROJECT.EXE [options]",10,13,9,"-h",9,"print this help message",10,13,9,"-p",9,"enable paging","$"
+		helpstr db "ASCII TO HEX CONVERTOR PROGRAM by Robert Belanec",13,10,"Usage: PROJECT.EXE [options]",13,10,9,"-h",9,"print this help message",13,10,9,"-p",9,"enable paging","$"
 
 	.CODE
 main:
