@@ -338,46 +338,47 @@ fileclose ENDP
 
 
 get_cwd:
-	mov ah, 47h
-	mov dl, 0
-	mov si, offset directory
-	int 21h
+	mov ah, 47h 					; set ah to get cwd service call number
+	mov dl, 0 						; set dl to 0 (device 0)
+	mov si, offset directory 		; set si to directory string begining
+	int 21h 						; DOS interupt
 
 	ret
 
 add_slash:
-	mov si, offset directory
-	xor bx, bx
+	mov si, offset directory 		; set si to directory string begining
+	xor bx, bx 						; clear bx
 	findend:
-		mov al, byte [si + bx]
+		mov al, byte [si + bx] 		; add current byte to al
 
-		inc bx
-		cmp al, 36
-		jne findend
+		inc bx 						; increment byte counter
+		cmp al, 36 					; check if al is $
+		jne findend 				; if not go to begining of the loop
 
-	dec bx
-	mov [si + bx], 92
+	dec bx 							; go back by one byte
+	mov [si + bx], 92 				; replace space with backslash
 
 	ret
 
+; get length of string, ax - input string, bx - output string length
 strlen:
-	mov si, ax
-	xor bx, bx
+	mov si, ax 						; move ax to si
+	xor bx, bx 						; clear bx
 	next_byte:
-		mov al, byte [si + bx]
+		mov al, byte [si + bx] 		; iterate trough string
 		inc bx
 
-		cmp al, 36
-		jne next_byte
+		cmp al, 36 					
+		jne next_byte 				; if not end of string continue looping
 
 	ret
 
 error:
-	print estr
+	print estr 						; print error string and end the program
 	jmp endprog
 
 endprog:
-	mov ax, 4C00h		; podporgram pre navrat do DOS
-	int 21h				; prerusenie na vykonanie podporogramu
+	mov ax, 4C00h		; go back to DOS service call number
+	int 21h				; DOS interupt
 
 END
