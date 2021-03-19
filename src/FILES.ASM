@@ -27,6 +27,7 @@ include time.inc
 		pagestr db 9,9,9,9," "," "," ","Press any key to continue...", "$"
 
 		directory db 1024 dup('$')	; directory string definition
+		filenamestr db 16 dup(0)
 	.CODE
 
 ; make artefacts public, allowing them to be accessed from other files
@@ -38,6 +39,7 @@ public fileread_paging
 public fileclose
 public endprog
 public print_number_noc
+public read_filename
 
 ;print content of ax as colored number
 print_number PROC
@@ -130,7 +132,7 @@ n_digits ENDP
 
 ; procedure to open a file
 fileopen PROC
-	mov dx, offset fn 				; set dx to filename
+	mov dx, offset filenamestr 				; set dx to filename
 	mov al, 0 						; open for reading
 	
 	mov ah, 3Dh 					; set ah to fileopen service number
@@ -214,6 +216,12 @@ mov rowscounter, 0 					; we also need to count number of rows printed
 call get_cwd 						; get the current working directory
 call add_slash 						; add backslash to end
 
+mov ax, offset filenamestr
+call strlen
+
+mov si, offset filenamestr
+mov ds:[si + bx], '$'
+
 ; this part is the same as the non paging procedure
 pread_loop:
 	mov bx, file_handle 			
@@ -255,7 +263,7 @@ no_nl:
 	
 	push bx 						; save it for later
 
-	mov ax, offset fn 				; get filename string len
+	mov ax, offset filenamestr 		; get filename string len
 	call strlen
 
 	pop dx 							; pop cwd len to dx
@@ -269,7 +277,7 @@ no_nl:
 	print_char 8 					; backpace 1 char
 
 filename_only:
-	print fn 						; print filename
+	print filenamestr 						; print filename
 	print_char 13 					; print CR LF
 	print_char 10
 	inc rowscounter 				; increment rowcounter
@@ -352,7 +360,7 @@ add_slash:
 		mov al, byte [si + bx] 		; add current byte to al
 
 		inc bx 						; increment byte counter
-		cmp al, 36 					; check if al is $
+		cmp al, 0 					; check if al is $
 		jne findend 				; if not go to begining of the loop
 
 	dec bx 							; go back by one byte
@@ -368,8 +376,35 @@ strlen:
 		mov al, byte [si + bx] 		; iterate trough string
 		inc bx
 
-		cmp al, 36 					
+		cmp al, 0 					
 		jne next_byte 				; if not end of string continue looping
+
+	ret
+
+read_filename:
+	mov si, bx
+	mov bx, offset filenamestr
+
+	inc si
+	makestring_loop:
+		inc si
+
+		xor dx, dx
+		mov dl, es:[si]
+
+		mov [bx], dl
+		inc bx
+
+		xor ax, ax
+		lea ax, byte ptr es:[si]
+		lea cx, byte ptr es:[80h]
+		sub ax, cx
+
+		xor cx, cx
+		mov cl, es:[80h]
+
+		cmp ax, cx
+		jne makestring_loop
 
 	ret
 
