@@ -1,9 +1,9 @@
-; Vypísať obsah vstupu v hexadecimálnom tvare. Na začiatku každého riadku vypísať posunutie prvej vypisovanej hodnoty od začiatku.
+; Zadanie: Vypísať obsah vstupu v hexadecimálnom tvare. Na začiatku každého riadku vypísať posunutie prvej vypisovanej hodnoty od začiatku.
 
 TITLE Project to write hexvalue of ascii chars
 
-include files.inc
-include utils.inc
+include files.inc ; include file management module
+include utils.inc ; include utilities like print or print_char
 
 	.MODEL small
 
@@ -11,52 +11,53 @@ include utils.inc
 	P486N
 
 	.DATA
+		; help string definition
 		helpstr db "ASCII TO HEX CONVERTOR PROGRAM by Robert Belanec",13,10,"Usage: PROJECT.EXE [options]",13,10,9,"-h",9,"print this help message",13,10,9,"-p",9,"enable paging","$"
 
 	.CODE
 main:
-	lea bx, byte ptr ds:[81h]
+	lea bx, byte ptr ds:[81h]	; set bx to first byte of PSP
 read_args:
-	inc bx
-	mov dl, ds:[bx]
-	cmp dl, '-'
-	jz is_arg
-	jmp files
+	inc bx						; go to next byte
+	mov dl, ds:[bx]				; move it to dl register
+	cmp dl, '-'					; check if its '-'
+	jz is_arg					; if its '-', go to argument proccesing
+	jmp files 					; else go to file processing
 
 is_arg:
-	inc bx
-	mov dl, ds:[bx]
+	inc bx						; go to next byte
+	mov dl, ds:[bx]				; save it to dl register
 
-	cmp dl, 'h'
-	jz help
+	cmp dl, 'h'					; check if its 'h'
+	jz help 					; if its 'h', go to help print
 
-	cmp dl, 'p'
-	jz files_paging
+	cmp dl, 'p'					; check if its 'p'
+	jz files_paging   			; if its 'p', go to file processing with paging
 
-	jmp files	
+	jmp files					; else go to file processing
 
 help:
-	mov ax, @DATA
+	mov ax, @DATA				; set datasegmet to DS register
 	mov ds, ax
-	print helpstr
+	print helpstr				; print help
 
-	jmp endprog
+	jmp endprog					; go back to DOS
 
 files:
-	mov ax, @DATA
+	mov ax, @DATA 				; set datasegmet to DS register
 	mov ds, ax
-	call fileopen
-	call fileread
-	call fileclose
+	call fileopen				; open file
+	call fileread 				; read and process file
+	call fileclose 				; close file
 	
 	jmp endprog
 
 files_paging:
-	mov ax, @DATA
+	mov ax, @DATA 				; set datasegmet to DS register
 	mov ds, ax
-	call fileopen
-	call fileread_paging
-	call fileclose
+	call fileopen				; open file
+	call fileread_paging		; read and process file with paging
+	call fileclose				; close file
 
 	jmp endprog
 
