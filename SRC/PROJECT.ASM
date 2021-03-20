@@ -12,7 +12,7 @@ include utils.inc ; include utilities like print or print_char
 
 	.DATA
 		; help string definition
-		helpstr db "ASCII TO HEX CONVERTOR PROGRAM by Robert Belanec",13,10,"Usage: PROJECT.EXE [-h | -p]",13,10,9,"-h",9,"print this help message",13,10,9,"-p",9,"enable paging","$"
+		helpstr db "ASCII TO HEX CONVERTOR PROGRAM by Robert Belanec",13,10,"Usage: PROJECT.EXE [-h | -p] file",13,10,9,"-h",9,"print this help message",13,10,9,"-p",9,"enable paging","$"
 	.CODE
 main:
 	mov ax, @DATA 				; set datasegmet to DS register
